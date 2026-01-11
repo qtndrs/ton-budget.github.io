@@ -5,93 +5,82 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Budget Master Pro</title>
     
+    <!-- PWA Settings -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#3b82f6">
 
-    <!-- CSS (Tailwind) -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; -webkit-tap-highlight-color: transparent; }
-        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3b82f6; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        /* Force display for critical UI elements */
-        #mobile-nav { position: fixed; bottom: 0; left: 0; width: 100%; z-index: 50; background: white; border-top: 1px solid #e2e8f0; padding-bottom: env(safe-area-inset-bottom); display: flex !important; }
-        #desktop-sidebar { display: none; }
-        @media (min-width: 768px) {
-            #mobile-nav { display: none !important; }
-            #desktop-sidebar { display: flex !important; }
-        }
-        /* FAB Button fixed position */
-        .fab-btn { position: fixed; bottom: 90px; right: 20px; z-index: 60; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4); }
-        @media (min-width: 768px) { .fab-btn { display: none !important; } }
-        
-        .fade-in { animation: fadeIn 0.3s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    </style>
-</head>
-<body class="h-screen flex flex-col overflow-hidden text-slate-800">
-
-    <!-- Loader -->
-    <div id="loader" class="fixed inset-0 z-[1000] bg-white flex flex-col items-center justify-center transition-opacity duration-300">
-        <div class="loader mb-4"></div>
-        <p class="text-slate-500 text-sm font-medium">Chargement...</p>
-        <button onclick="App.logout()" class="mt-8 text-xs text-red-400 underline cursor-pointer">Forcer Déconnexion</button>
-    </div>
-
-    <!-- Main Container -->
-    <div class="flex h-full w-full">
-        
-        <!-- Desktop Sidebar -->
-        <aside id="desktop-sidebar" class="hidden w-64 bg-white border-r border-slate-200 flex-col">
-            <div class="p-6 flex items-center gap-3 text-blue-600 font-bold text-xl border-b border-slate-50">
-                <span class="text-2xl">Wallet</span> Budget Pro
-            </div>
-            <nav class="flex-1 p-4 space-y-2" id="desktop-menu"></nav>
-            <div class="p-4 border-t border-slate-100">
-                <div id="user-email" class="px-2 text-xs font-bold text-slate-400 mb-2 truncate"></div>
-                <button onclick="App.logout()" class="w-full flex items-center justify-center gap-2 text-sm text-red-500 font-bold py-3 rounded-xl border border-red-100 hover:bg-red-50 transition-colors">Déconnexion</button>
-            </div>
-        </aside>
-
-        <!-- Main View -->
-        <main class="flex-1 flex flex-col h-full relative overflow-hidden bg-slate-50">
-            <!-- Mobile Header -->
-            <div class="md:hidden bg-white px-5 py-4 flex justify-between items-center border-b border-slate-100 pt-safe z-10 shadow-sm">
-                <div class="flex items-center gap-2 text-blue-600 font-bold text-lg">Budget Pro</div>
-                <div class="flex gap-4">
-                    <button onclick="App.openModal('feedback')" class="text-slate-400">💡</button>
-                    <button onclick="App.logout()" class="text-red-400">🚪</button>
-                </div>
-            </div>
-
-            <!-- Scrollable Content -->
-            <div id="content" class="flex-1 overflow-y-auto p-4 md:p-10 pb-28 md:pb-10 space-y-6">
-                <!-- Content injected here -->
-            </div>
-
-            <!-- Mobile FAB -->
-            <button onclick="App.openModal('transaction')" class="fab-btn md:hidden w-14 h-14 bg-blue-600 text-white rounded-full flex items-center justify-center text-2xl active:scale-90 transition-transform">+</button>
-
-            <!-- Mobile Bottom Nav -->
-            <div id="mobile-nav" class="justify-around items-center">
-                <!-- Nav injected here -->
-            </div>
-        </main>
-    </div>
-
-    <!-- Modals Container -->
-    <div id="modals"></div>
-
-    <!-- JAVASCRIPT LOGIC -->
+    <!-- React & Babel -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, setDoc, getDoc, writeBatch, query, orderBy, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // CONFIGURATION
+        window.firebaseModules = { 
+            initializeApp, getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged,
+            getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, onSnapshot, setDoc, getDoc, writeBatch, query, orderBy, enableIndexedDbPersistence
+        };
+    </script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: '#0f172a',
+                        brand: '#3b82f6',
+                        brandDark: '#1e40af',
+                        success: '#10b981',
+                        danger: '#ef4444',
+                        warning: '#f59e0b',
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    screens: { 'xs': '380px' }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; -webkit-tap-highlight-color: transparent; }
+        .loader { border: 3px solid #f3f3f3; border-top: 3px solid #3b82f6; border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .hidden { display: none !important; }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+        .pt-safe { padding-top: env(safe-area-inset-top); }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        
+        /* Force Z-Index for Mobile Nav to ensure visibility */
+        #mobile-nav { z-index: 9998; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); background-color: white; }
+        #mobile-fab { z-index: 9999; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden text-slate-800 bg-slate-50">
+
+    <div id="loader" class="fixed inset-0 z-[10000] bg-white flex flex-col items-center justify-center transition-opacity duration-300">
+        <div class="loader mb-4"></div>
+        <p class="text-slate-500 text-sm font-medium animate-pulse">Démarrage...</p>
+    </div>
+
+    <!-- Container Principal -->
+    <div id="app" class="flex-1 flex flex-col h-full relative"></div>
+    
+    <!-- Container des Pop-ups -->
+    <div id="modals"></div>
+
+    <script type="text/babel">
+        // --- CONFIG ---
         const CONFIG = {
             apiKey: "AIzaSyArI0_rQUsVKpjXfup9F_JDXY8NKT8LFXc",
             authDomain: "qd-budget.firebaseapp.com",
@@ -100,367 +89,672 @@
             messagingSenderId: "449759615644",
             appId: "1:449759615644:web:18ab3fae6255071822eb59"
         };
-        
-        // --- GLOBAL STATE ---
-        const State = {
-            user: null,
-            view: 'home',
-            month: new Date().toISOString().slice(0, 7),
-            transactions: [],
-            invoices: [],
-            plan: { revenus: [], fixes: [], epargne: [], beneficiaries: [], variableBudgets: [] },
-            categories: {
-                variable: ['Alimentation', 'Resto/Sorties', 'Shopping', 'Carburant/Transport', 'Santé', 'Loisirs', 'Cadeaux', 'Maison'],
-                fixe: ['Loyer/Prêt', 'Énergie', 'Eau', 'Internet/Tel', 'Assurances', 'Taxes', 'Abonnements', 'Emprunts'],
-                revenu: ['Salaire', 'Dividendes', 'Remboursement', 'Vente', 'Flexi-job', 'Autre'],
-                epargne: ['Virement vers Épargne', 'Investissements', 'Vacances'],
-                virement: ['Épargne > Courant', 'Courant > Épargne', 'Courant > Cash (Retrait)', 'Cash > Courant (Dépôt)']
-            }
+        const ADMIN_EMAIL = "quentin.droussin@gmail.com";
+        const APP_ID = 'budget-app';
+
+        const DEFAULT_CATEGORIES = {
+            variable: ['Alimentation', 'Resto/Sorties', 'Shopping', 'Carburant/Transport', 'Santé', 'Loisirs', 'Cadeaux', 'Maison'],
+            fixe: ['Loyer/Prêt', 'Énergie', 'Eau', 'Internet/Tel', 'Assurances', 'Taxes', 'Abonnements', 'Emprunts'],
+            revenu: ['Salaire', 'Dividendes', 'Remboursement', 'Vente', 'Flexi-job', 'Autre'],
+            epargne: ['Virement vers Épargne', 'Investissements', 'Vacances'],
+            virement: ['Épargne > Courant', 'Courant > Épargne', 'Courant > Cash (Retrait)', 'Cash > Courant (Dépôt)']
         };
 
-        // --- INIT FIREBASE ---
-        const app = initializeApp(CONFIG);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        try { enableIndexedDbPersistence(db); } catch(e) {}
+        // --- HELPERS ---
+        const formatCurr = (val) => new Intl.NumberFormat('fr-BE', { style: 'currency', currency: 'EUR' }).format(isNaN(val) ? 0 : val);
+        const parseAmount = (val) => parseFloat((val || '0').toString().replace(',', '.'));
 
-        // --- HELPER FUNCTIONS ---
-        const formatMoney = (amount) => new Intl.NumberFormat('fr-BE', { style: 'currency', currency: 'EUR' }).format(amount);
-        
-        // --- APP LOGIC ---
+        const Icon = (name, size = 20, className = '') => {
+            const icons = {
+                wallet: '<path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12a2 2 0 0 0 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/>',
+                home: '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+                list: '<line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>',
+                file: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>',
+                chart: '<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>',
+                settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+                plus: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+                close: '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+                logOut: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>',
+                star: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>',
+                edit: '<path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>',
+                trash: '<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+                search: '<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>',
+                bulb: '<path d="M9 21h6v-2a2 2 0 0 1 2-2v-2a2 2 0 0 0-2-2 3 3 0 0 0-3 3 2 2 0 0 1-2 2h-1a2 2 0 0 0-2-2V6a3 3 0 0 1 3-3 3 3 0 0 1 3 3v2a2 2 0 0 0 2 2h1v2a2 2 0 0 1-2 2v2a2 2 0 0 0-2 2v2a2 2 0 0 1-2 2H9z"/>',
+                shield: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+                download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>'
+            };
+            return `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="${className}">${icons[name] || ''}</svg>`;
+        };
+
+        // --- APP CONTROLLER ---
         const App = {
-            init: () => {
-                onAuthStateChanged(auth, (user) => {
-                    document.getElementById('loader').classList.add('hidden');
-                    State.user = user;
-                    
-                    if (user) {
-                        document.getElementById('user-email').innerText = user.email;
-                        App.loadData();
-                        App.renderNav(); // Build menus immediately
-                    } else {
-                        App.renderLogin();
+            // STATE
+            state: {
+                user: null,
+                view: 'home',
+                month: new Date().toISOString().slice(0, 7),
+                tx: [],
+                invoices: [],
+                plan: { revenus: [], fixes: [], epargne: [], beneficiaries: [], variableBudgets: [] },
+                cats: DEFAULT_CATEGORIES,
+                search: '',
+                usersList: [],
+                feedbacks: []
+            },
+
+            // INIT
+            init: async () => {
+                let attempts = 0;
+                while (!window.firebaseModules && attempts < 50) { 
+                    await new Promise(r => setTimeout(r, 100)); 
+                    attempts++;
+                }
+
+                if (!window.firebaseModules) {
+                    alert("Erreur critique : Modules Firebase non chargés. Vérifiez votre connexion.");
+                    return;
+                }
+
+                const fb = window.firebaseModules;
+                window.fb = fb; 
+                
+                try {
+                    const app = fb.initializeApp(CONFIG);
+                    window.auth = fb.getAuth(app);
+                    window.db = fb.getFirestore(app);
+                    try { fb.enableIndexedDbPersistence(window.db); } catch(e) {}
+                } catch(e) { console.error("Firebase Init Error:", e); }
+
+                fb.onAuthStateChanged(window.auth, async (u) => {
+                    const loader = document.getElementById('loader');
+                    if (loader) loader.classList.add('hidden');
+                    App.state.user = u;
+                    if (u) {
+                        try {
+                            const userRef = fb.doc(window.db, 'artifacts', APP_ID, 'directory', u.uid);
+                            fb.getDoc(userRef).then(snap => {
+                                if (!snap.exists()) fb.setDoc(userRef, { email: u.email, joinedAt: new Date().toISOString(), blocked: false });
+                                else if (snap.data().blocked) { alert("Compte suspendu"); fb.signOut(window.auth); }
+                            }).catch(err => console.log("Directory error", err));
+                            
+                            App.startListeners();
+                        } catch (e) { console.error("Auth Listener Error", e); }
+                    }
+                    App.render();
+                });
+            },
+
+            // LISTENERS
+            startListeners: () => {
+                const uid = App.state.user.uid;
+                const fb = window.fb;
+                
+                fb.onSnapshot(fb.collection(window.db, 'artifacts', APP_ID, 'users', uid, 'transactions'), snap => {
+                    App.state.tx = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => new Date(b.date) - new Date(a.date));
+                    App.render();
+                    // Onboarding
+                    if(App.state.tx.length === 0 && !document.getElementById('modals').hasChildNodes()) {
+                        setTimeout(() => { if(App.state.tx.length === 0 && App.state.user) App.openModal('onboarding-1'); }, 1000);
                     }
                 });
-            },
 
-            loadData: () => {
-                const uid = State.user.uid;
+                fb.onSnapshot(fb.collection(window.db, 'artifacts', APP_ID, 'users', uid, 'invoices'), snap => {
+                    App.state.invoices = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => new Date(a.dueDate) - new Date(b.dueDate));
+                    App.render();
+                });
+
+                fb.onSnapshot(fb.doc(window.db, 'artifacts', APP_ID, 'users', uid, 'settings', 'budget_plan'), snap => {
+                    if(snap.exists()) App.state.plan = snap.data();
+                    App.render();
+                });
+
+                fb.onSnapshot(fb.doc(window.db, 'artifacts', APP_ID, 'users', uid, 'settings', 'categories'), snap => {
+                    if(snap.exists()) App.state.cats = snap.data();
+                    App.render();
+                });
                 
-                // Real-time listeners
-                onSnapshot(collection(db, 'artifacts', 'budget-app', 'users', uid, 'transactions'), snap => {
-                    State.transactions = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => new Date(b.date) - new Date(a.date));
-                    App.renderView(); // Refresh view
-                    // Check Onboarding
-                    if(State.transactions.length === 0) setTimeout(() => App.openModal('onboarding-1'), 1000);
-                });
-
-                onSnapshot(collection(db, 'artifacts', 'budget-app', 'users', uid, 'invoices'), snap => {
-                    State.invoices = snap.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => new Date(a.dueDate) - new Date(b.dueDate));
-                    App.renderView();
-                });
-
-                onSnapshot(doc(db, 'artifacts', 'budget-app', 'users', uid, 'settings', 'budget_plan'), snap => {
-                    if(snap.exists()) State.plan = snap.data();
-                    App.renderView();
-                });
+                if (App.state.user && App.state.user.email === ADMIN_EMAIL) {
+                     fb.onSnapshot(fb.collection(window.db, 'artifacts', APP_ID, 'directory'), snap => {
+                         App.state.usersList = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                         App.render();
+                     });
+                     fb.onSnapshot(fb.query(fb.collection(window.db, 'artifacts', APP_ID, 'feedback'), fb.orderBy('date', 'desc')), snap => {
+                         App.state.feedbacks = snap.docs.map(d => ({id: d.id, ...d.data()}));
+                         App.render();
+                     });
+                }
             },
 
-            logout: () => signOut(auth),
-            
-            login: async (email, pass, isReg) => {
-                try {
-                    if(isReg) await createUserWithEmailAndPassword(auth, email, pass);
-                    else await signInWithEmailAndPassword(auth, email, pass);
-                } catch(e) { alert("Erreur: " + e.message); }
+            // ACTIONS
+            actions: {
+                setView: (v) => { App.state.view = v; App.render(); },
+                setMonth: (v) => { App.state.month = v; App.render(); },
+                setSearch: (v) => { App.state.search = v; App.render(); },
+                logout: () => window.fb.signOut(window.auth),
+                login: async (email, pass, isReg) => {
+                    const fb = window.fb;
+                    try {
+                        if (isReg) {
+                            const cred = await fb.createUserWithEmailAndPassword(window.auth, email, pass);
+                            await fb.setDoc(fb.doc(window.db, 'artifacts', APP_ID, 'directory', cred.user.uid), { email, joinedAt: new Date().toISOString(), blocked: false });
+                        } else {
+                            await fb.signInWithEmailAndPassword(window.auth, email, pass);
+                        }
+                    } catch (e) { alert("Erreur: " + e.message); }
+                },
+                saveTx: async (data, id, addToPlan) => {
+                    App.closeModal();
+                    const fb = window.fb;
+                    const col = fb.collection(window.db, 'artifacts', APP_ID, 'users', App.state.user.uid, 'transactions');
+                    if(id) await fb.updateDoc(fb.doc(window.db, 'artifacts', APP_ID, 'users', App.state.user.uid, 'transactions', id), data);
+                    else await fb.addDoc(col, { ...data, createdAt: new Date().toISOString() });
+                    if (addToPlan && data.type !== 'initial') {
+                        const section = data.type === 'revenu' ? 'revenus' : 'fixes';
+                        const newPlan = { ...App.state.plan, [section]: [...(App.state.plan[section]||[]), { name: data.name, amount: data.amount, category: data.category }] };
+                        await fb.setDoc(fb.doc(window.db, 'artifacts', APP_ID, 'users', App.state.user.uid, 'settings', 'budget_plan'), newPlan);
+                    }
+                },
+                delTx: (id) => { if(confirm('Supprimer ?')) window.fb.deleteDoc(window.fb.doc(window.db, 'artifacts', APP_ID, 'users', App.state.user.uid, 'transactions', id)); },
+                addInitial: async (c, e, ca) => {
+                    App.closeModal();
+                    const fb = window.fb;
+                    const batch = fb.writeBatch(window.db);
+                    const col = fb.collection(window.db, 'artifacts', APP_ID, 'users', App.state.user.uid, 'transactions');
+                    const d = new Date().toISOString().slice(0,10);
+                    if(c) batch.set(fb.doc(col), { type: 'initial', amount: parseAmount(c), category: 'Compte Courant', date: d, createdAt: new Date().toISOString() });
+                    if(e) batch.set(fb.doc(col), { type: 'initial', amount: parseAmount(e), category: 'Compte Épargne', date: d, createdAt: new Date().toISOString() });
+                    if(ca) batch.set(fb.doc(col), { type: 'initial', amount: parseAmount(ca), category: 'Espèces', date: d, createdAt: new Date().toISOString() });
+                    await batch.commit();
+                    App.openModal('onboarding-2');
+                },
+                savePlan: async (newPlan) => {
+                    App.closeModal();
+                    await window.fb.setDoc(window.fb.doc(window.db, 'artifacts', APP_ID, 'users', App.state.user.uid, 'settings', 'budget_plan'), newPlan);
+                },
+                addPlanItem: (sec, data) => { const n=[...(App.state.plan[sec]||[]), data]; App.actions.savePlan({...App.state.plan, [sec]:n}); },
+                delPlanItem: (sec, i) => { const n=[...App.state.plan[sec]]; n.splice(i, 1); App.actions.savePlan({...App.state.plan, [sec]:n}); },
+                toggleFav: async (name) => {
+                    if(!name) return;
+                    const list = App.state.plan.beneficiaries || [];
+                    const newList = list.includes(name) ? list.filter(n => n !== name) : [...list, name];
+                    await window.fb.setDoc(window.fb.doc(window.db, 'artifacts', APP_ID, 'users', App.state.user.uid, 'settings', 'budget_plan'), { ...App.state.plan, beneficiaries: newList });
+                    const btn = document.getElementById('fav-btn');
+                    if(btn) btn.innerHTML = Icon('star', 18, newList.includes(name) ? 'fill-amber-500 text-amber-500' : 'text-slate-300');
+                },
+                saveCategories: async (newCats) => {
+                    await window.fb.setDoc(window.fb.doc(window.db, 'artifacts', APP_ID, 'users', App.state.user.uid, 'settings', 'categories'), newCats);
+                    App.closeModal();
+                },
+                manageCat: async (action, type, val) => {
+                    if(!val) return;
+                    const newCats = { ...App.state.cats };
+                    if(action === 'add') newCats[type].push(val);
+                    else newCats[type] = newCats[type].filter(c => c !== val);
+                    await window.fb.setDoc(window.fb.doc(window.db, 'artifacts', APP_ID, 'users', App.state.user.uid, 'settings', 'categories'), newCats);
+                    setTimeout(() => App.openModal('category'), 300);
+                },
+                addCategoryBudget: (cat, amt) => {
+                    const n = [...(App.state.plan.variableBudgets||[]).filter(b=>b.category!==cat), {category:cat, amount:parseAmount(amt)}];
+                    App.actions.savePlan({...App.state.plan, variableBudgets:n});
+                },
+                delCategoryBudget: (cat) => {
+                    const n = (App.state.plan.variableBudgets||[]).filter(b=>b.category!==cat);
+                    App.actions.savePlan({...App.state.plan, variableBudgets:n});
+                },
+                addInv: async (data, id) => {
+                    App.closeModal();
+                    const fb = window.fb;
+                    if(id) await fb.updateDoc(fb.doc(window.db, 'artifacts', APP_ID, 'users', App.state.user.uid, 'invoices', id), data);
+                    else await fb.addDoc(fb.collection(window.db, 'artifacts', APP_ID, 'users', App.state.user.uid, 'invoices'), { ...data, status: 'pending', createdAt: new Date().toISOString() });
+                },
+                payInv: async (invId, invData, payData) => {
+                    App.closeModal();
+                    const fb = window.fb;
+                    const batch = fb.writeBatch(window.db);
+                    batch.update(fb.doc(window.db, 'artifacts', APP_ID, 'users', App.state.user.uid, 'invoices', invId), { status: 'paid', paidAt: payData.date, paymentMethod: payData.paymentMethod });
+                    batch.set(fb.doc(fb.collection(window.db, 'artifacts', APP_ID, 'users', App.state.user.uid, 'transactions')), {
+                        type: 'fixe', category: invData.category || 'Autre', name: invData.sender, amount: parseAmount(invData.amount),
+                        date: payData.date, paymentMethod: payData.paymentMethod, beneficiary: invData.sender, createdAt: new Date().toISOString()
+                    });
+                    await batch.commit();
+                },
+                delInv: (id) => { if(confirm('Supprimer facture ?')) window.fb.deleteDoc(window.fb.doc(window.db, 'artifacts', APP_ID, 'users', App.state.user.uid, 'invoices', id)); },
+                genMonthly: async () => {
+                    if(!confirm("Générer les frais fixes pour ce mois ?")) return;
+                    const fb = window.fb;
+                    const batch = fb.writeBatch(window.db);
+                    const col = fb.collection(window.db, 'artifacts', APP_ID, 'users', App.state.user.uid, 'transactions');
+                    (App.state.plan.fixes || []).forEach(item => {
+                         const ref = fb.doc(col);
+                         batch.set(ref, {
+                            type: 'fixe', category: item.category, name: item.name, amount: parseAmount(item.amount),
+                            date: `${App.state.month}-${String(item.day || 1).padStart(2,'0')}`, createdAt: new Date().toISOString(), paymentMethod: 'courant'
+                         });
+                    });
+                    await batch.commit();
+                },
+                toggleBlock: async (uid, status) => { if(confirm('Changer le statut ?')) await window.fb.updateDoc(window.fb.doc(window.db, 'artifacts', APP_ID, 'directory', uid), { blocked: !status }); },
+                sendFeedback: async (data) => {
+                    App.closeModal();
+                    await window.fb.addDoc(window.fb.collection(window.db, 'artifacts', APP_ID, 'feedback'), { ...data, userId: App.state.user.uid, userEmail: App.state.user.email, date: new Date().toISOString() });
+                    alert("Merci !");
+                },
+                exportCSV: () => {
+                     const rows = [["Date","Type","Cat","Nom","Montant","Methode"]];
+                     App.state.tx.forEach(t => rows.push([t.date, t.type, t.category, t.name, t.amount, t.paymentMethod]));
+                     const csv = "data:text/csv;charset=utf-8," + rows.map(e => e.join(";")).join("\n");
+                     const link = document.createElement("a"); link.href = encodeURI(csv); link.download = "budget.csv"; link.click();
+                },
+                saveOnboardingStep2Item: (data) => App.actions.addPlanItem('revenus', data),
+                saveOnboardingStep3Item: (data) => App.actions.addPlanItem('fixes', data),
+                setSearch: (v) => { App.state.search = v; App.render(); }
             },
 
-            setView: (viewName) => {
-                State.view = viewName;
-                App.renderView();
-                App.renderNav(); // Update active state
+            // --- COMPUTATIONS ---
+            computeStats: () => {
+                let sc=0, se=0, cash=0;
+                const catSpending = {};
+                (App.state.tx||[]).forEach(t => {
+                    const amt=parseAmount(t.amount);
+                    const type=t.type||'variable', cat=t.category||'', pm=t.paymentMethod||'courant';
+                    if(type==='initial'){ if(cat.includes('Epargne') || cat.includes('Épargne')) se+=amt; else if(cat.includes('Espèces')) cash+=amt; else sc+=amt; }
+                    else if(type==='revenu') sc+=amt;
+                    else if(type==='epargne') { sc-=amt; se+=amt; }
+                    else if(type==='virement') {
+                        if(cat.includes('Épargne > Courant')) {se-=amt; sc+=amt;} else if(cat.includes('Courant > Épargne')) {sc-=amt; se+=amt;} else if(cat.includes('Retrait')) {sc-=amt; cash+=amt;} else if(cat.includes('Dépôt')) {cash-=amt; sc+=amt;}
+                    } else {
+                        if(pm==='cash') cash-=amt; else sc-=amt;
+                        if((t.date||'').startsWith(App.state.month)) catSpending[cat]=(catSpending[cat]||0)+amt;
+                    }
+                });
+                const monthTrans=App.state.tx.filter(t=>(t.date||'').startsWith(App.state.month));
+                const mStats={revenu:0, fixe:0, variable:0, epargne:0};
+                monthTrans.forEach(t=>{ const tp=t.type||'variable'; if(mStats[tp]!==undefined) mStats[tp]+=parseAmount(t.amount); });
+                const planRev=(App.state.plan.revenus||[]).reduce((s,i)=>s+parseAmount(i.amount),0);
+                const planFix=(App.state.plan.fixes||[]).reduce((s,i)=>s+parseAmount(i.amount),0);
+                const planEp=(App.state.plan.epargne||[]).reduce((s,i)=>s+parseAmount(i.amount),0);
+                const budgetVar=Math.max(0, planRev - planFix - planEp);
+                const resteVar=budgetVar-mStats.variable;
+                const resteFixes=Math.max(0, planFix-mStats.fixe);
+                const pendingInv=App.state.invoices.filter(i=>i.status==='pending').reduce((s,i)=>s+parseAmount(i.amount),0);
+                const proj=sc - Math.max(0, resteFixes) - Math.max(0, resteVar) - pendingInv;
+                const catBudgets=(App.state.plan.variableBudgets||[]).map(b=>({name:b.category, target:b.amount, spent:catSpending[b.category]||0, percent:Math.min(((catSpending[b.category]||0)/b.amount)*100, 100)}));
+                return { sc, se, cash, patrim:sc+se+cash, mStats, resteVar, budgetVar, proj, pendingInv, catBudgets };
             },
 
-            // --- UI RENDERERS ---
-            renderNav: () => {
-                const items = [
-                    {id:'home', label:'Accueil', icon:'🏠'},
-                    {id:'list', label:'Journal', icon:'📝'},
-                    {id:'invoices', label:'Factures', icon:'📄'},
-                    {id:'chart', label:'Analyses', icon:'📊'},
-                    {id:'settings', label:'Plan', icon:'⚙️'}
+            // --- RENDER ---
+            render: () => {
+                const app = document.getElementById('app');
+                if (!app) return;
+                
+                if (!App.state.user) {
+                    app.innerHTML = App.Templates.Login();
+                    return;
+                }
+
+                let stats;
+                try { stats = App.computeStats(); } catch (err) { stats = { sc:0, se:0, cash:0, patrim:0, mStats:{revenu:0, fixe:0, variable:0, epargne:0}, resteVar:0, budgetVar:0, proj:0, pendingInv:0, catBudgets:[] }; }
+
+                const menuItems = [
+                    { id: 'home', icon: 'home', label: 'Accueil' },
+                    { id: 'list', icon: 'list', label: 'Journal' },
+                    { id: 'invoices', icon: 'file', label: 'Factures' },
+                    { id: 'chart', icon: 'chart', label: 'Analyses' },
+                    { id: 'settings', icon: 'settings', label: 'Plan' }
                 ];
+                if(App.state.user.email === ADMIN_EMAIL) menuItems.push({ id: 'admin', icon: 'shield', label: 'Admin' });
 
-                // Desktop
-                const dMenu = document.getElementById('desktop-menu');
-                dMenu.innerHTML = items.map(i => `
-                    <button onclick="window.App.setView('${i.id}')" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${State.view===i.id ? 'bg-blue-50 text-blue-600' : 'text-slate-500 hover:bg-slate-50'}">
-                        <span class="text-lg">${i.icon}</span> ${i.label}
-                    </button>
-                `).join('');
+                app.innerHTML = `
+                    <div class="flex h-full w-full bg-slate-50">
+                        <aside class="hidden md:flex flex-col w-64 bg-white border-r border-slate-200">
+                            <div class="p-8 flex items-center gap-3 text-brand font-bold text-xl border-b border-slate-50">${Icon('wallet', 32)} Master Pro</div>
+                            <nav class="flex-1 px-4 space-y-2">
+                                ${menuItems.map(i => `<button onclick="window.App.actions.setView('${i.id}')" class="w-full flex items-center gap-3 px-5 py-4 rounded-2xl font-semibold transition-all ${App.state.view===i.id?'bg-blue-50 text-brand shadow-sm':'text-slate-500 hover:bg-slate-50'}">${Icon(i.icon)} ${i.label}</button>`).join('')}
+                            </nav>
+                            <div class="p-4 border-t border-slate-100">
+                                <div class="px-2 text-xs font-bold text-slate-400 mb-2 uppercase">Mon Compte</div>
+                                <div class="px-2 text-sm font-medium truncate mb-4 text-slate-700">${App.state.user.email}</div>
+                                <button onclick="window.App.actions.logout()" class="w-full flex items-center justify-center gap-2 text-sm text-red-500 font-bold py-3 rounded-xl border border-red-100 hover:bg-red-50 transition-colors">${Icon('logOut', 16)} Déconnexion</button>
+                            </div>
+                        </aside>
 
-                // Mobile
-                const mMenu = document.getElementById('mobile-nav');
-                mMenu.innerHTML = items.map(i => `
-                    <button onclick="window.App.setView('${i.id}')" class="p-2 flex flex-col items-center gap-1 flex-1 transition-colors ${State.view===i.id ? 'text-blue-600' : 'text-slate-400'}">
-                        <span class="text-xl">${i.icon}</span>
-                        <span class="text-[10px] font-bold">${i.label}</span>
-                    </button>
-                `).join('');
+                        <main class="flex-1 flex flex-col h-full relative overflow-hidden">
+                            <div class="md:hidden bg-white px-5 py-4 flex justify-between items-center border-b border-slate-100 pt-safe">
+                                <div class="flex items-center gap-2 text-brand font-bold text-lg">${Icon('wallet')} Master Pro</div>
+                                <div class="flex gap-4">
+                                    <button onclick="window.App.openModal('feedback')" class="text-slate-300">${Icon('bulb')}</button>
+                                    <button onclick="window.App.actions.logout()" class="text-red-400">${Icon('logOut')}</button>
+                                </div>
+                            </div>
+                            <div class="flex-1 overflow-y-auto p-4 md:p-10 space-y-6 pb-28 md:pb-10">
+                                ${App.Templates[App.state.view](stats)}
+                            </div>
+                            ${App.state.view === 'home' ? `<button onclick="window.App.openModal('transaction')" class="md:hidden absolute bottom-24 md:bottom-10 right-5 md:right-10 w-16 h-16 bg-brand text-white rounded-full shadow-2xl flex items-center justify-center z-20 active:scale-90 transition-transform">${Icon('plus', 32)}</button>` : ''}
+                            <div id="mobile-nav" class="md:hidden bg-white border-t border-slate-100 flex justify-around items-end p-2 pb-safe z-20 absolute bottom-0 w-full shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
+                                ${menuItems.map(i => `<button onclick="window.App.actions.setView('${i.id}')" class="p-3 rounded-2xl flex flex-col items-center gap-1 min-w-[64px] ${App.state.view===i.id?'text-brand bg-blue-50':'text-slate-400'}">${Icon(i.icon, 24)}<span class="text-[10px] font-bold">${i.label}</span></button>`).join('')}
+                            </div>
+                        </main>
+                    </div>
+                `;
             },
 
-            renderLogin: () => {
-                document.getElementById('content').innerHTML = `
-                    <div class="h-full flex items-center justify-center">
-                        <div class="bg-white w-full max-w-sm p-8 rounded-2xl shadow-xl">
-                            <h1 class="text-2xl font-bold text-center mb-6 text-blue-600">Budget Master</h1>
-                            <form onsubmit="event.preventDefault(); window.App.login(this.email.value, this.pass.value, false)" class="space-y-4">
-                                <input name="email" type="email" class="w-full border p-4 rounded-xl bg-slate-50" placeholder="Email" required>
-                                <input name="pass" type="password" class="w-full border p-4 rounded-xl bg-slate-50" placeholder="Mot de passe" required>
-                                <button class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg">Connexion</button>
-                                <button type="button" onclick="window.App.login(this.form.email.value, this.form.pass.value, true)" class="w-full bg-slate-100 text-slate-600 font-bold py-3 rounded-xl">Créer un compte</button>
+            // --- TEMPLATES (HTML STRINGS) ---
+            Templates: {
+                Login: () => `
+                    <div class="h-full flex items-center justify-center p-6 bg-slate-50 fade-in">
+                        <div class="bg-white w-full max-w-sm p-8 rounded-2xl shadow-xl border border-slate-100">
+                            <div class="flex justify-center mb-6 text-brand">${Icon('wallet', 48)}</div>
+                            <h1 class="text-2xl font-bold text-center mb-6">Budget Master</h1>
+                            <div class="flex bg-slate-100 p-1 rounded-xl mb-6">
+                                <button onclick="document.getElementById('auth-form').dataset.mode='login'; this.className='flex-1 py-2 text-xs font-bold rounded-xl bg-white shadow text-slate-800 transition-all'; this.nextElementSibling.className='flex-1 py-2 text-xs font-bold rounded-xl text-slate-400 transition-all'" class="flex-1 py-2 text-xs font-bold rounded-xl bg-white shadow text-slate-800 transition-all">Connexion</button>
+                                <button onclick="document.getElementById('auth-form').dataset.mode='register'; this.className='flex-1 py-2 text-xs font-bold rounded-xl bg-white shadow text-slate-800 transition-all'; this.previousElementSibling.className='flex-1 py-2 text-xs font-bold rounded-xl text-slate-400 transition-all'" class="flex-1 py-2 text-xs font-bold rounded-xl text-slate-400 transition-all">S'inscrire</button>
+                            </div>
+                            <form id="auth-form" data-mode="login" onsubmit="event.preventDefault(); App.actions.login(this.email.value, this.pass.value, this.dataset.mode==='register')" class="space-y-4">
+                                <input name="email" type="email" class="w-full border p-4 rounded-2xl bg-slate-50 focus:bg-white transition-all outline-none" placeholder="Email" required>
+                                <input name="pass" type="password" class="w-full border p-4 rounded-2xl bg-slate-50 focus:bg-white transition-all outline-none" placeholder="Mot de passe" required>
+                                <button class="w-full bg-brand text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition-all">Valider</button>
                             </form>
                         </div>
                     </div>
-                `;
-                // Hide navs on login
-                document.getElementById('mobile-nav').classList.add('hidden');
-                document.getElementById('desktop-sidebar').classList.add('hidden');
-                document.querySelector('.fab-btn').classList.add('hidden');
-            },
-
-            renderView: () => {
-                if(!State.user) return;
-                
-                // Restore Navs
-                document.getElementById('mobile-nav').classList.remove('hidden');
-                document.getElementById('desktop-sidebar').classList.remove('hidden');
-                // FAB only on home
-                if(State.view === 'home') document.querySelector('.fab-btn').classList.remove('hidden');
-                else document.querySelector('.fab-btn').classList.add('hidden');
-
-                const content = document.getElementById('content');
-                const stats = App.computeStats();
-
-                if (State.view === 'home') {
-                    content.innerHTML = `
-                        <div class="flex justify-between items-center mb-4">
-                            <div><p class="text-slate-500 text-xs font-bold uppercase">Patrimoine</p><h2 class="text-3xl font-bold text-slate-800">${formatMoney(stats.patrim)}</h2></div>
+                `,
+                home: (stats) => `
+                    <div class="flex justify-between items-center mb-4">
+                        <div><p class="text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">Patrimoine Global</p><h2 class="text-3xl md:text-4xl font-bold text-slate-900">${formatCurr(stats.patrim)}</h2></div>
+                        <input type="month" value="${App.state.month}" onchange="window.App.actions.setMonth(this.value)" class="bg-white border-2 border-slate-100 rounded-2xl p-3 text-sm font-bold shadow-sm outline-none focus:border-brand transition-all">
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-gradient-to-br from-brand to-brandDark rounded-[2rem] p-8 text-white shadow-xl shadow-blue-100">
+                            <p class="text-blue-100 text-sm font-medium mb-1 opacity-80">Compte Courant</p><p class="text-4xl font-bold">${formatCurr(stats.sc)}</p>
+                            <div class="mt-6 pt-6 border-t border-white/20 text-xs flex justify-between items-center"><span class="opacity-70 font-medium">Fin de mois estimée :</span><span class="font-bold text-xl">${formatCurr(stats.proj)}</span></div>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl p-6 text-white shadow-lg">
-                                <p class="text-blue-100 text-sm mb-1">Compte Courant</p><p class="text-3xl font-bold">${formatMoney(stats.sc)}</p>
-                                <div class="mt-4 pt-4 border-t border-white/20 text-xs flex justify-between"><span>Fin mois est.</span><span class="font-bold text-lg">${formatMoney(stats.proj)}</span></div>
-                            </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100"><p class="text-slate-400 text-xs font-bold uppercase">Épargne</p><p class="text-xl font-bold text-slate-800 truncate">${formatMoney(stats.se)}</p></div>
-                                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100"><p class="text-slate-400 text-xs font-bold uppercase">Cash</p><p class="text-xl font-bold text-slate-800 truncate">${formatMoney(stats.cash)}</p></div>
-                            </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-white rounded-[1.5rem] p-6 shadow-sm border border-slate-100 flex flex-col justify-center"><p class="text-slate-400 text-[10px] font-bold uppercase mb-1">Épargne</p><p class="text-xl font-bold text-slate-800 truncate">${formatCurr(stats.se)}</p></div>
+                            <div class="bg-white rounded-[1.5rem] p-6 shadow-sm border border-slate-100 flex flex-col justify-center"><p class="text-slate-400 text-[10px] font-bold uppercase mb-1">Espèces</p><p class="text-xl font-bold text-slate-800 truncate">${formatCurr(stats.cash)}</p></div>
                         </div>
-                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                            <div class="flex justify-between items-start mb-4">
-                                <div><p class="text-xs text-slate-400 font-bold uppercase">Reste à dépenser</p><h2 class="text-3xl font-bold ${stats.resteVar<0?'text-red-500':'text-slate-800'}">${formatMoney(stats.resteVar)}</h2></div>
-                                <div class="text-right"><p class="text-xs text-slate-400">Budget</p><p class="font-bold text-slate-600">${formatMoney(stats.budgetVar)}</p></div>
-                            </div>
-                            <div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden mb-6"><div class="h-full ${stats.resteVar<0?'bg-red-500':'bg-blue-500'}" style="width:${stats.budgetVar>0 ? Math.min((stats.mStats.variable/stats.budgetVar)*100, 100) : 0}%"></div></div>
-                            <div class="grid grid-cols-3 gap-2 text-center text-xs">
-                                <div class="bg-slate-50 p-2 rounded"><span class="block text-slate-400 uppercase">Revenus</span><span class="font-bold text-green-600">+${stats.mStats.revenu}</span></div>
-                                <div class="bg-slate-50 p-2 rounded"><span class="block text-slate-400 uppercase">Fixes</span><span class="font-bold text-slate-700">-${stats.mStats.fixe}</span></div>
-                                <div class="bg-slate-50 p-2 rounded"><span class="block text-slate-400 uppercase">Variable</span><span class="font-bold text-blue-600">-${stats.mStats.variable}</span></div>
-                            </div>
+                    </div>
+                    <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100">
+                        <div class="flex justify-between items-start mb-6">
+                            <div><p class="text-xs text-slate-400 font-bold uppercase mb-1">Reste à dépenser</p><h2 class="text-4xl font-bold ${stats.resteVar<0?'text-danger':'text-slate-800'}">${formatCurr(stats.resteVar)}</h2></div>
+                            <div class="text-right"><p class="text-xs text-slate-400 mb-1">Budget Total</p><p class="font-bold text-slate-600 text-lg">${formatCurr(stats.budgetVar)}</p></div>
                         </div>
-                    `;
-                } else if (State.view === 'list') {
-                     content.innerHTML = `
-                        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 mb-4 flex justify-between items-center">
-                            <h2 class="font-bold text-lg">Journal</h2>
-                            <button onclick="window.App.genMonthly()" class="text-xs bg-blue-50 text-blue-600 px-3 py-1 rounded-lg font-bold">⚡ Générer Fixes</button>
+                        <div class="w-full bg-slate-100 h-4 rounded-full overflow-hidden mb-8"><div class="h-full ${stats.resteVar<0?'bg-danger':'bg-brand'}" style="width:${stats.budgetVar > 0 ? Math.min((stats.mStats.variable/stats.budgetVar)*100, 100) : 0}%"></div></div>
+                        <div class="grid grid-cols-3 gap-6 text-center text-xs">
+                            <div class="bg-slate-50 p-2 rounded"><span class="block text-slate-400 uppercase">Revenus</span><span class="font-bold text-success text-lg">+${stats.mStats.revenu}€</span></div>
+                            <div class="bg-slate-50 p-2 rounded"><span class="block text-slate-400 uppercase">Fixes</span><span class="font-bold text-slate-700 text-lg">-${stats.mStats.fixe}€</span></div>
+                            <div class="bg-slate-50 p-2 rounded"><span class="block text-slate-400 uppercase">Variable</span><span class="font-bold text-brand text-lg">-${stats.mStats.variable}€</span></div>
                         </div>
-                        <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-                            ${State.transactions.length === 0 ? '<div class="p-8 text-center text-slate-400 text-sm">Aucune opération</div>' : 
-                            State.transactions.map(t => `
-                                <div class="p-4 border-b last:border-0 flex justify-between items-center">
+                    </div>
+                `,
+                list: () => {
+                    const term = App.state.search.toLowerCase();
+                    const list = App.state.tx.filter(t => (t.name||'').toLowerCase().includes(term) || (t.beneficiary||'').toLowerCase().includes(term));
+                    return `
+                    <div class="flex flex-col gap-4 bg-white p-6 rounded-[1.5rem] shadow-sm border border-slate-100 mb-6 flex-col">
+                        <div class="flex justify-between items-center"><h2 class="font-bold text-xl text-slate-800">Journal des Opérations</h2><button onclick="App.actions.genMonthly()" class="text-xs bg-blue-50 text-brand font-bold px-5 py-3 rounded-2xl hover:bg-blue-100 transition-colors">⚡ Générer Fixes</button></div>
+                        <div class="relative"><input type="text" value="${App.state.search}" placeholder="Chercher..." class="w-full pl-12 pr-4 py-4 bg-slate-50 border-2 border-transparent focus:border-brand focus:bg-white rounded-2xl text-sm outline-none transition-all" oninput="window.App.actions.setSearch(this.value)"><div class="absolute left-4 top-4 text-slate-300">${Icon('search', 20)}</div></div>
+                    </div>
+                    <div class="bg-white rounded-[1.5rem] shadow-sm border border-slate-100 overflow-hidden">
+                        ${list.length === 0 ? '<div class="p-20 text-center text-slate-400 text-sm italic">Aucune opération trouvée</div>' : list.map(t => `
+                            <div class="p-5 flex justify-between items-center border-b border-slate-50 last:border-0 hover:bg-slate-50/50 group transition-colors">
+                                <div class="flex gap-4 items-center">
+                                    <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl bg-slate-50">${t.type==='revenu'?'↓':t.type==='epargne'?'🐷':t.type==='fixe'?'🔒':t.type==='virement'?'⇄':'🛒'}</div>
                                     <div>
-                                        <div class="font-bold text-sm text-slate-800">${t.name}</div>
-                                        <div class="text-xs text-slate-400">${new Date(t.date).toLocaleDateString()} • ${t.category}</div>
-                                    </div>
-                                    <div class="text-right">
-                                        <div class="font-bold text-sm ${t.type==='revenu'||t.type==='initial'?'text-green-600':t.type==='epargne'?'text-amber-600':'text-slate-800'}">${t.type==='revenu'||t.type==='initial'?'+':'-'}${formatMoney(parseFloat(t.amount))}</div>
-                                        <button onclick="window.App.delTx('${t.id}')" class="text-[10px] text-red-300">Supprimer</button>
+                                        <div class="flex items-center gap-2 font-bold text-slate-800">${t.beneficiary ? `<span class="text-brandDark">${t.beneficiary}</span><span class="text-slate-200 font-light">|</span>` : ''} <span>${t.name || 'Sans note'}</span></div>
+                                        <p class="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-wider">${new Date(t.date).toLocaleDateString('fr-FR', {day:'2-digit', month:'short'})} • <span class="bg-slate-100 px-2 py-0.5 rounded text-slate-500">${t.category}</span></p>
                                     </div>
                                 </div>
-                            `).join('')}
-                        </div>
-                     `;
-                } else if (State.view === 'invoices') {
-                    content.innerHTML = `
-                         <div class="flex justify-between items-center mb-6"><h2 class="font-bold text-xl">Factures</h2><button onclick="window.App.openModal('add-invoice')" class="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm font-bold flex gap-1 items-center">+ Nouvelle</button></div>
-                         <div class="space-y-6">
-                            ${State.invoices.filter(i=>i.status==='pending').map(inv => `
-                                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
-                                    <div><p class="font-bold text-slate-800">${inv.sender}</p><p class="text-xs text-red-500 font-bold">Échéance : ${new Date(inv.dueDate).toLocaleDateString()}</p></div>
-                                    <div class="text-right"><p class="font-bold text-lg">${inv.amount}€</p><button onclick='window.App.openModal("pay-invoice", ${JSON.stringify(inv)})' class="bg-blue-600 text-white text-xs px-3 py-1 rounded-lg">Payer</button></div>
+                                <div class="text-right">
+                                    <p class="font-bold text-lg ${t.type==='revenu'||t.type==='initial'?'text-success':t.type==='epargne'?'text-amber-600':'text-slate-800'}">${t.type==='revenu'||t.type==='initial'?'+':'-'}${parseFloat(t.amount).toLocaleString()}€</p>
+                                    <div class="flex justify-end gap-4 mt-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onclick='App.openModal("transaction", ${JSON.stringify(t)})' class="text-slate-300 hover:text-blue-500">${Icon('edit', 16)}</button><button onclick="App.actions.delTx('${t.id}')" class="text-slate-300 hover:text-red-500">${Icon('trash', 16)}</button></div>
                                 </div>
-                            `).join('') || '<div class="text-center text-slate-400 text-sm">Rien à payer 🎉</div>'}
-                         </div>
-                    `;
-                } else if (State.view === 'settings') {
-                    content.innerHTML = `
-                        <div class="space-y-6">
-                            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-                                <h3 class="font-bold text-sm uppercase text-slate-400 mb-4">Planification Mensuelle</h3>
-                                ${['revenus', 'fixes', 'epargne'].map(sec => `
-                                    <div class="mb-4">
-                                        <div class="flex justify-between items-center mb-2"><h4 class="font-bold capitalize text-sm">${sec}</h4><button onclick="window.App.openModal('plan-item', '${sec}')" class="bg-slate-100 w-6 h-6 rounded flex items-center justify-center text-slate-600">+</button></div>
-                                        <div class="space-y-2">${(State.plan[sec]||[]).map((item, i) => `<div class="flex justify-between items-center p-2 bg-slate-50 rounded-lg text-xs"><span>${item.name} (${item.amount}€)</span><button onclick="window.App.delPlanItem('${sec}', ${i})" class="text-red-300">×</button></div>`).join('')}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `},
+                invoices: () => `
+                    <div class="flex justify-between items-center mb-6"><h2 class="font-bold text-xl">Factures</h2><button onclick="App.openModal('add-invoice')" class="bg-brand text-white px-4 py-2 rounded-xl text-sm font-bold flex gap-1 items-center shadow-md">${Icon('plus', 16)} Nouvelle</button></div>
+                    <div class="space-y-8">
+                        <div>
+                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">À Régler</h3>
+                            <div class="bg-white rounded-[1.5rem] shadow-sm border border-slate-100 overflow-hidden">
+                                ${App.state.invoices.filter(i => i.status === 'pending').map(inv => `
+                                    <div class="p-6 border-b border-slate-50 last:border-0 flex justify-between items-center group">
+                                        <div class="flex items-center gap-4"><div class="w-12 h-12 rounded-2xl flex items-center justify-center bg-slate-50 text-slate-400">${Icon('file', 20)}</div><div><p class="font-bold text-slate-800">${inv.sender}</p><p class="text-xs text-danger font-bold mt-1 uppercase tracking-tighter italic">Échéance : ${new Date(inv.dueDate).toLocaleDateString()}</p></div></div>
+                                        <div class="flex items-center gap-4">
+                                            <div class="flex flex-col items-end gap-1"><span class="font-bold text-slate-900 text-lg">${inv.amount} €</span><button onclick='App.openModal("pay-invoice", ${JSON.stringify(inv)})' class="text-xs bg-brand text-white px-6 py-2 rounded-full font-bold shadow-md hover:bg-brandDark transition-all">Payer</button></div>
+                                            <div class="flex flex-col gap-3 opacity-0 group-hover:opacity-100 transition-opacity"><button onclick='App.openModal("add-invoice", ${JSON.stringify(inv)})' class="text-slate-300 hover:text-blue-500">${Icon('edit', 16)}</button><button onclick="window.App.actions.delInv('${inv.id}')" class="text-slate-300 hover:text-red-500">${Icon('trash', 16)}</button></div>
+                                        </div>
                                     </div>
-                                `).join('')}
+                                `).join('') || '<div class="p-8 text-center text-slate-300 text-xs italic">Aucune facture en attente</div>'}
                             </div>
                         </div>
-                    `;
-                } else {
-                    content.innerHTML = '<div class="p-10 text-center text-slate-400">Section en construction</div>';
-                }
+                        <div>
+                            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Historique</h3>
+                            <div class="bg-white rounded-[1.5rem] shadow-sm border border-slate-100 overflow-hidden opacity-60">
+                                ${App.state.invoices.filter(i => i.status === 'paid').map(inv => `
+                                    <div class="p-6 border-b border-slate-50 last:border-0 flex justify-between items-center group">
+                                        <div><p class="font-medium text-sm text-slate-600 line-through">${inv.sender}</p><p class="text-[10px] text-green-600 font-bold uppercase mt-1">Payé le ${new Date(inv.paidAt).toLocaleDateString()}</p></div>
+                                        <div class="text-right flex items-center gap-4"><p class="font-medium text-sm text-slate-400">${formatCurr(inv.amount)}</p><button onclick="window.App.actions.delInv('${inv.id}')" class="opacity-0 group-hover:opacity-100 text-slate-300 hover:text-red-500">${Icon('trash', 14)}</button></div>
+                                    </div>
+                                `).join('') || '<div class="p-8 text-center text-xs text-slate-300 italic">Vide</div>'}
+                            </div>
+                        </div>
+                    </div>
+                `,
+                chart: (stats) => `
+                    <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100 mb-8">
+                        <h3 class="font-bold text-slate-800 mb-6 text-sm uppercase tracking-widest text-center">Suivi des Budgets</h3>
+                        <div class="space-y-6">
+                            ${(stats.catBudgets || []).map(b => `
+                                <div><div class="flex justify-between text-sm mb-2 font-bold"><span class="text-slate-700">${b.name}</span><span class="${b.spent > b.target ? 'text-danger' : 'text-slate-400'} font-mono">${Math.round(b.spent)} / ${b.target} €</span></div><div class="w-full bg-slate-50 h-3 rounded-full overflow-hidden shadow-inner"><div class="h-full ${b.spent > b.target ? 'bg-danger' : 'bg-brand'}" style="width:${b.percent}%"></div></div></div>
+                            `).join('') || '<div class="p-10 text-center text-slate-300 text-sm italic">Ajoutez des budgets cibles dans "Plan"</div>'}
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-6">
+                        <h3 class="font-bold text-slate-800 mb-4 text-sm uppercase tracking-wide">Répartition Mensuelle</h3>
+                        <div class="h-6 bg-slate-100 rounded-full overflow-hidden flex shadow-inner">
+                            ${(() => {
+                                const st = stats.mStats;
+                                const total = st.fixe + st.variable + st.epargne;
+                                if(total === 0) return '';
+                                return `<div class="h-full bg-slate-500" style="width:${(st.fixe/total)*100}%"></div><div class="h-full bg-blue-500" style="width:${(st.variable/total)*100}%"></div><div class="h-full bg-amber-500" style="width:${(st.epargne/total)*100}%"></div>`;
+                            })()}
+                        </div>
+                        <div class="flex justify-center gap-6 text-xs mt-4 font-medium text-slate-600"><div class="flex items-center gap-2"><div class="w-3 h-3 bg-slate-500 rounded-full shadow-sm"></div> Fixes</div><div class="flex items-center gap-2"><div class="w-3 h-3 bg-blue-500 rounded-full shadow-sm"></div> Variable</div><div class="flex items-center gap-2"><div class="w-3 h-3 bg-amber-500 rounded-full shadow-sm"></div> Épargne</div></div>
+                    </div>
+                `,
+                settings: () => `
+                    <div class="space-y-8">
+                        <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100">
+                             <div class="mb-8"><h4 class="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">Catégories <button onclick="App.openModal('category')" class="text-brand text-[10px] bg-blue-50 px-3 py-1 rounded-full font-bold ml-auto">Gérer</button></h4><div class="flex flex-wrap gap-2">${Object.values(App.state.cats).flat().map(c => `<span class="bg-slate-50 border border-slate-100 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-600">${c}</span>`).join('')}</div></div>
+                             <div><h4 class="font-bold text-slate-800 text-sm mb-4 flex items-center gap-2">Favoris <button onclick="App.openModal('beneficiaries')" class="text-brand text-[10px] bg-blue-50 px-3 py-1 rounded-full font-bold ml-auto">Gérer</button></h4><div class="flex flex-wrap gap-2">${(App.state.plan.beneficiaries || []).map(b => `<span class="bg-amber-50 border border-amber-100 px-4 py-2 rounded-xl text-xs font-bold text-amber-700 flex items-center gap-1.5">${Icon('star', 12, 'fill-amber-500')} ${b}</span>`).join('') || '<p class="text-xs text-slate-300 italic text-center w-full">Aucun bénéficiaire favori</p>'}</div></div>
+                        </div>
+                        <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100">
+                             <div class="flex justify-between items-center mb-10"><h3 class="font-bold uppercase text-slate-500 text-xs tracking-widest text-center w-full">Planification Mensuelle</h3></div>
+                             <div class="mb-10"><div class="flex justify-between items-center mb-4"><h4 class="font-bold text-sm flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-brand"></span>Budgets Cibles</h4><button onclick="App.openModal('budget-cat')" class="text-brand bg-blue-50 w-8 h-8 rounded-2xl flex items-center justify-center active:scale-90 transition-all">${Icon('plus', 16)}</button></div>
+                                <div class="space-y-2">${(App.state.plan.variableBudgets || []).map((b, i) => `<div class="flex justify-between items-center p-4 bg-slate-50 rounded-2xl text-xs font-bold border border-slate-100"><span>${b.category}</span><div class="flex items-center gap-4"><span>${b.amount}€</span><button onclick="const n=App.state.plan.variableBudgets.filter((_,ix)=>ix!==${i}); window.App.actions.savePlan({...state.plan, variableBudgets:n})" class="text-slate-300 hover:text-danger text-base">×</button></div></div>`).join('')}</div>
+                             </div>
+                             ${['revenus', 'fixes', 'epargne'].map(sec => `
+                                <div class="mb-10 last:mb-0"><div class="flex justify-between items-center mb-4"><h4 class="font-bold capitalize text-slate-800 text-sm flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-slate-400"></span>${sec}</h4><button onclick="App.openModal('plan-item', '${sec}')" class="bg-slate-100 w-8 h-8 rounded-2xl flex items-center justify-center">${Icon('plus', 16)}</button></div>
+                                <div class="space-y-2">${(App.state.plan[sec]||[]).map((item, i) => `<div class="flex justify-between items-center p-4 bg-slate-50 rounded-2xl text-xs border border-slate-100"><div><span class="font-bold text-slate-700">${item.name}</span> <span class="text-slate-400 ml-1">(${item.category})</span></div><div class="flex items-center gap-4 font-bold text-slate-900"><span>${item.amount}€</span><button onclick="window.App.actions.delPlanItem('${sec}', ${i})" class="text-slate-300 hover:text-danger text-base px-1">×</button></div></div>`).join('')}</div></div>
+                             `).join('')}
+                         </div>
+                    </div>
+                `,
+                admin: () => `
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+                        <div class="p-4 border-b font-bold bg-slate-50">Utilisateurs (${App.state.usersList.length})</div>
+                        ${App.state.usersList.map(u => `
+                            <div class="p-4 border-b last:border-0 flex justify-between items-center">
+                                <div><p class="font-bold text-sm text-slate-800">${u.email}</p><p class="text-[10px] text-slate-400">Inscrit : ${new Date(u.joinedAt).toLocaleDateString()}</p></div>
+                                <button onclick="window.App.actions.toggleBlock('${u.id}', ${u.blocked})" class="text-xs px-3 py-1 rounded-lg font-bold ${u.blocked ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-600'}">${u.blocked ? "Bloqué" : "Actif"}</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                     <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden mt-4">
+                        <div class="p-4 border-b font-bold bg-slate-50">Retours (${App.state.feedbacks.length})</div>
+                        ${App.state.feedbacks.map(f => `
+                            <div class="p-4 border-b last:border-0">
+                                <div class="flex justify-between items-start mb-1"><span class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 text-blue-600">${f.type}</span><span class="text-[10px] text-slate-400">${new Date(f.date).toLocaleDateString()}</span></div>
+                                <p class="text-sm font-medium text-slate-800">${f.message}</p>
+                                <p class="text-xs text-slate-400 mt-1">Par: ${f.userEmail}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                `
             },
 
-            computeStats: () => {
-                let sc=0, se=0, cash=0;
-                // Calculations simplified for reliability
-                State.transactions.forEach(t => {
-                    const amt = parseFloat(t.amount||0);
-                    if(t.type==='initial') {
-                        if(t.category.includes('Épargne')) se+=amt; else if(t.category.includes('Espèces')) cash+=amt; else sc+=amt;
-                    } else if(t.type==='revenu') sc+=amt;
-                    else if(t.type==='epargne') { sc-=amt; se+=amt; }
-                    else if(t.type==='virement') { /* logic skipped for brevity */ }
-                    else { if(t.paymentMethod==='cash') cash-=amt; else sc-=amt; }
-                });
-                
-                const mStats = { revenu:0, fixe:0, variable:0, epargne:0 };
-                State.transactions.filter(t=>t.date.startsWith(State.currentMonth)).forEach(t => { if(mStats[t.type]!==undefined) mStats[t.type]+=parseFloat(t.amount||0); });
-                
-                const planRev = (State.plan.revenus||[]).reduce((s,i)=>s+parseFloat(i.amount||0),0);
-                const planFix = (State.plan.fixes||[]).reduce((s,i)=>s+parseFloat(i.amount||0),0);
-                const planEp = (State.plan.epargne||[]).reduce((s,i)=>s+parseFloat(i.amount||0),0);
-                const budgetVar = Math.max(0, planRev - planFix - planEp);
-                const resteVar = budgetVar - mStats.variable;
-                const proj = sc - Math.max(0, planFix - mStats.fixe) - Math.max(0, resteVar);
-
-                return { sc, se, cash, patrim:sc+se+cash, mStats, resteVar, budgetVar, proj };
-            },
-
-            // --- ACTIONS & MODALS ---
             openModal: (type, data) => {
                 const modal = document.getElementById('modals');
-                let inner = '';
+                let content = '', title = '';
                 
                 if (type === 'transaction') {
-                    const d = data || { date: new Date().toISOString().slice(0,10), amount: '', type: 'variable', category: State.categories.variable[0] };
-                    inner = `
-                        <form onsubmit="event.preventDefault(); window.App.saveTx({date: this.d.value, amount: this.a.value, type: this.t.value, category: this.c.value, name: this.n.value, paymentMethod: this.p.value}, '${data?data.id:''}')">
-                            <h3 class="font-bold text-lg mb-4">${data?'Modifier':'Nouvelle'} Opération</h3>
-                            <div class="flex gap-2 mb-4 bg-slate-100 p-1 rounded-xl">
-                                ${['variable','fixe','revenu','epargne','virement'].map(t=>`<label class="flex-1 text-center py-2 text-[10px] uppercase font-bold cursor-pointer rounded-lg has-[:checked]:bg-white has-[:checked]:shadow transition-all"><input type="radio" name="t" value="${t}" class="hidden" ${d.type===t?'checked':''} onclick="window.App.updateCatSelect(this.value)">${t.slice(0,3)}</label>`).join('')}
+                    title = data ? 'Modifier' : 'Nouveau';
+                    const d = data || { date: new Date().toISOString().slice(0,10), amount: '', type: 'variable', category: App.state.cats.variable[0], paymentMethod: 'courant' };
+                    let act = d.type === 'revenu' ? 'revenu' : (d.type === 'virement' || d.type === 'epargne' ? 'virement' : 'depense');
+                    
+                    content = `
+                        <form onsubmit="event.preventDefault(); 
+                            let type='variable', cat='';
+                            const tab = document.querySelector('.tab-btn.active').dataset.tab;
+                            if(tab==='depense') { cat=this.cat_dep.value; if(this.rec.checked) type='fixe'; }
+                            else if(tab==='revenu') { type='revenu'; cat=this.cat_rev.value; }
+                            else { type='virement'; cat=this.cat_vir.value; if(cat.includes('Epargne')) type='epargne'; }
+                            window.App.actions.saveTx({
+                                date: this.date.value, amount: parseFloat(this.amount.value), type, category: cat, name: this.name.value, 
+                                beneficiary: this.benef?.value, paymentMethod: this.pm?.value || 'courant'
+                            }, '${data ? data.id : ''}', this.rec?.checked);
+                        ">
+                            <div class="flex bg-slate-100 p-1 rounded-2xl mb-6">
+                                ${['depense','revenu','virement'].map(t => `<button type="button" data-tab="${t}" onclick="window.App.switchTab('${t}', this)" class="tab-btn flex-1 py-3 text-xs font-bold rounded-xl transition-all ${act===t?'bg-white shadow-sm text-slate-800 active':'text-slate-400'}">${t.charAt(0).toUpperCase()+t.slice(1)}</button>`).join('')}
                             </div>
-                            <div class="grid grid-cols-2 gap-2 mb-4">
-                                <input name="d" type="date" value="${d.date}" class="border p-3 rounded-xl w-full text-sm font-bold bg-slate-50" required>
-                                <input name="a" type="number" step="0.01" value="${d.amount}" placeholder="€" class="border p-3 rounded-xl w-full text-right font-bold bg-slate-50" required>
+                            <div class="grid grid-cols-2 gap-4 mb-6">
+                                <input name="date" type="date" value="${d.date}" class="border-2 border-slate-100 p-4 rounded-2xl w-full text-sm font-semibold outline-none focus:border-brand" required>
+                                <input name="amount" type="number" step="0.01" value="${d.amount}" placeholder="0.00 €" class="border-2 border-slate-100 p-4 rounded-2xl w-full font-bold text-right outline-none focus:border-brand" required>
                             </div>
-                            <select id="cat-select" name="c" class="w-full border p-3 rounded-xl mb-4 bg-white text-sm">${State.categories[d.type].map(c=>`<option ${c===d.category?'selected':''}>${c}</option>`).join('')}</select>
-                            <div class="flex gap-4 mb-4 text-xs font-bold text-slate-500 justify-center">
-                                <label><input type="radio" name="p" value="courant" checked> Carte</label>
-                                <label><input type="radio" name="p" value="cash"> Cash</label>
+                            
+                            <div id="tab-depense" class="${act!=='depense'?'hidden':''}">
+                                <div class="flex gap-3 mb-6">
+                                    <label class="flex-1 border-2 border-slate-100 p-3 rounded-2xl text-center text-xs font-bold cursor-pointer has-[:checked]:bg-blue-50 has-[:checked]:border-brand"><input type="radio" name="pm" value="courant" ${d.paymentMethod!=='cash'?'checked':''} class="hidden"> Carte</label>
+                                    <label class="flex-1 border-2 border-slate-100 p-3 rounded-2xl text-center text-xs font-bold cursor-pointer has-[:checked]:bg-blue-50 has-[:checked]:border-brand"><input type="radio" name="pm" value="cash" ${d.paymentMethod==='cash'?'checked':''} class="hidden"> Cash</label>
+                                </div>
+                                <div class="flex gap-3 mb-6">
+                                    <div class="relative flex-1"><input name="benef" list="favs" value="${d.beneficiary||''}" placeholder="Où ? (Lidl, Shell...)" class="w-full border-2 border-slate-100 p-4 rounded-2xl text-sm font-semibold outline-none focus:border-brand"><datalist id="favs">${(App.state.plan.beneficiaries||[]).map(b=>`<option value="${b}">`).join('')}</datalist></div>
+                                    <button type="button" id="fav-btn" onclick="window.App.actions.toggleFav(this.form.benef.value)" class="p-4 rounded-2xl border-2 border-slate-100 text-slate-300 active:scale-90 transition-all">${Icon('star', 20)}</button>
+                                </div>
+                                <div class="mb-6"><label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Catégorie</label><select name="cat_dep" class="w-full border-2 border-slate-100 p-4 rounded-2xl text-sm font-semibold bg-white outline-none focus:border-brand"><optgroup label="Variable">${App.state.cats.variable.map(c=>`<option ${c===d.category?'selected':''}>${c}</option>`).join('')}</optgroup><optgroup label="Fixe">${App.state.cats.fixe.map(c=>`<option ${c===d.category?'selected':''}>${c}</option>`).join('')}</optgroup></select></div>
+                                <label class="flex items-center gap-3 text-xs text-slate-500 font-medium mb-6 bg-slate-50 p-4 rounded-2xl"><input type="checkbox" name="rec" class="w-5 h-5 rounded-lg text-brand border-slate-200"> Dépense récurrente (Plan)</label>
                             </div>
-                            <input name="n" value="${d.name||''}" placeholder="Description" class="w-full border p-3 rounded-xl mb-6 text-sm">
-                            <button class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl">Valider</button>
+
+                            <div id="tab-revenu" class="${act!=='revenu'?'hidden':''}"><select name="cat_rev" class="w-full border-2 border-slate-100 p-4 rounded-2xl text-sm font-semibold bg-white outline-none mb-6">${App.state.cats.revenu.map(c=>`<option ${c===d.category?'selected':''}>${c}</option>`).join('')}</select></div>
+
+                            <div id="tab-virement" class="${act!=='virement'?'hidden':''}"><select name="cat_vir" class="w-full border-2 border-slate-100 p-4 rounded-2xl text-sm font-semibold bg-white outline-none mb-6"><optgroup label="Interne">${App.state.cats.virement.map(c=>`<option ${c===d.category?'selected':''}>${c}</option>`).join('')}</optgroup><optgroup label="Epargne">${App.state.cats.epargne.map(c=>`<option ${c===d.category?'selected':''}>${c}</option>`).join('')}</optgroup></select></div>
+
+                            <input name="name" value="${d.name||''}" placeholder="Note libre (facultatif)" class="w-full border-2 border-slate-100 p-4 rounded-2xl text-sm font-medium outline-none focus:border-brand mb-8">
+                            
+                            <button class="w-full bg-brand text-white font-bold py-5 rounded-[1.5rem] shadow-xl shadow-blue-100 active:scale-95 transition-all">Enregistrer</button>
                         </form>
                     `;
-                } else if (type === 'onboarding-1') {
-                     inner = `<form onsubmit="event.preventDefault(); window.App.addInitial(this.c.value, this.e.value, this.ca.value)">
-                        <h3 class="font-bold text-lg mb-4">Bienvenue ! 👋</h3>
-                        <p class="text-sm text-slate-500 mb-4">Initialisons vos soldes actuels :</p>
-                        <input name="c" type="number" step="0.01" placeholder="Compte Courant" class="w-full border p-3 rounded-xl mb-3 font-bold">
-                        <input name="e" type="number" step="0.01" placeholder="Épargne" class="w-full border p-3 rounded-xl mb-3 font-bold">
-                        <input name="ca" type="number" step="0.01" placeholder="Espèces" class="w-full border p-3 rounded-xl mb-6 font-bold">
-                        <button class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl">Démarrer</button>
+                }
+                else if (type === 'onboarding-1') {
+                    title = "Bienvenue ! 👋";
+                    content = `<form onsubmit="event.preventDefault(); window.App.actions.addInitialBalances(this.c.value, this.e.value, this.ca.value)">
+                        <p class="text-slate-500 text-sm mb-8">Indiquez vos soldes actuels pour commencer.</p>
+                        <div class="space-y-5 mb-8">
+                            <div><label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Compte Courant</label><input name="c" type="number" step="0.01" class="w-full border-2 border-slate-100 p-4 rounded-2xl font-bold text-lg" placeholder="0.00" required></div>
+                            <div><label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Épargne</label><input name="e" type="number" step="0.01" class="w-full border-2 border-slate-100 p-4 rounded-2xl font-bold text-lg" placeholder="0.00"></div>
+                            <div><label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Espèces</label><input name="ca" type="number" step="0.01" class="w-full border-2 border-slate-100 p-4 rounded-2xl font-bold text-lg" placeholder="0.00"></div>
+                        </div>
+                        <button class="w-full bg-brand text-white font-bold py-5 rounded-[1.5rem] shadow-lg active:scale-95 transition-all">Démarrer l'aventure</button>
                     </form>`;
-                } else if (type === 'plan-item') {
-                    const sec = data;
-                    inner = `<form onsubmit="event.preventDefault(); window.App.addPlanItem('${sec}', {name:this.n.value, amount:this.a.value, category:this.c.value})">
-                        <h3 class="font-bold text-lg mb-4 capitalize">Ajouter ${sec}</h3>
-                        <input name="n" placeholder="Nom (ex: Loyer)" class="w-full border p-3 rounded-xl mb-3 text-sm" required>
-                        <input name="a" type="number" step="0.01" placeholder="Montant €" class="w-full border p-3 rounded-xl mb-3 font-bold" required>
-                        <select name="c" class="w-full border p-3 rounded-xl mb-6 text-sm bg-white">${(State.categories[sec==='revenus'?'revenu':sec==='fixes'?'fixe':'epargne']).map(c=>`<option>${c}</option>`).join('')}</select>
-                        <button class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl">Ajouter</button>
+                }
+                else if (type === 'onboarding-2') {
+                    title = "Revenus (2/3)";
+                    content = `<div class="bg-slate-50 rounded-2xl p-4 mb-6 space-y-2 max-h-40 overflow-y-auto">${(state.plan.revenus||[]).map(r => `<div class="flex justify-between text-sm font-medium"><span>${r.name}</span><b>${r.amount}€</b></div>`).join('')}</div>
+                    <form onsubmit="event.preventDefault(); window.App.actions.saveOnboardingStep2Item({name:this.n.value, amount:this.a.value, category:'Salaire'})" class="mb-6 flex gap-3"><input name="n" placeholder="Nom" class="flex-1 border-2 border-slate-100 p-4 rounded-2xl text-sm font-medium outline-none focus:border-brand" required><input name="a" type="number" placeholder="€" class="w-24 border-2 border-slate-100 p-4 rounded-2xl text-sm font-bold outline-none focus:border-brand" required><button class="bg-white border-2 border-slate-100 text-brand rounded-2xl px-4 font-bold active:scale-90 transition-all">+</button></form>
+                    <button onclick="window.App.openModal('onboarding-3')" class="w-full bg-brand text-white font-bold py-5 rounded-[1.5rem] shadow-lg">Suivant</button>`;
+                }
+                else if (type === 'onboarding-3') {
+                    title = "Charges (3/3)";
+                    content = `<div class="bg-slate-50 rounded-2xl p-4 mb-6 space-y-2 max-h-40 overflow-y-auto">${(state.plan.fixes||[]).map(r => `<div class="flex justify-between text-sm font-medium"><span>${r.name}</span><b>${r.amount}€</b></div>`).join('')}</div>
+                    <form onsubmit="event.preventDefault(); window.App.actions.saveOnboardingStep3Item({name:this.n.value, amount:this.a.value, category:'Loyer/Prêt'})" class="mb-6 flex gap-3"><input name="n" placeholder="Nom" class="flex-1 border-2 border-slate-100 p-4 rounded-2xl text-sm font-medium outline-none focus:border-brand" required><input name="a" type="number" placeholder="€" class="w-24 border-2 border-slate-100 p-4 rounded-2xl text-sm font-bold outline-none focus:border-brand" required><button class="bg-white border-2 border-slate-100 text-brand rounded-2xl px-4 font-bold active:scale-90 transition-all">+</button></form>
+                    <button onclick="window.App.closeModal()" class="w-full bg-success text-white font-bold py-5 rounded-[1.5rem] shadow-lg">Terminer !</button>`;
+                }
+                else if (type === 'add-invoice') {
+                    const d = data || {sender:'', amount:'', dueDate:''};
+                    title = data ? 'Éditer Facture' : 'Nouvelle Facture';
+                    content = `<form onsubmit="event.preventDefault(); window.App.actions.addInvoice({sender:this.s.value, amount:parseFloat(this.a.value), dueDate:this.d.value, category:this.c.value}, '${data?data.id:''}')">
+                        <input name="s" value="${d.sender}" placeholder="Expéditeur (ex: VOO)" class="w-full border-2 border-slate-100 p-4 rounded-2xl mb-4 text-sm font-semibold outline-none focus:border-brand" required>
+                        <input name="a" type="number" step="0.01" value="${d.amount}" placeholder="Montant €" class="w-full border-2 border-slate-100 p-4 rounded-2xl font-bold text-lg outline-none focus:border-brand mb-4" required>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Date d'échéance</label>
+                        <input name="d" type="date" value="${d.dueDate}" class="w-full border-2 border-slate-100 p-4 rounded-2xl mb-4 text-sm font-bold outline-none focus:border-brand" required>
+                        <select name="c" class="w-full border-2 border-slate-100 p-4 rounded-2xl mb-8 text-sm font-semibold bg-white outline-none focus:border-brand">${state.cats.fixe.map(c=>`<option ${c===d.category?'selected':''}>${c}</option>`).join('')}</select>
+                        <button class="w-full bg-brand text-white font-bold py-5 rounded-[1.5rem] shadow-lg">Enregistrer</button>
                     </form>`;
+                }
+                else if (type === 'pay-invoice') {
+                    title = "Règlement";
+                    content = `<form onsubmit="event.preventDefault(); window.App.actions.payInvoice('${data.id}', {sender:'${data.sender}', amount:'${data.amount}', category:'${data.category}'}, {date:this.d.value, paymentMethod:this.pm.value})">
+                        <div class="text-center mb-8"><p class="text-slate-400 text-xs font-bold uppercase mb-2">Montant à régler</p><p class="text-4xl font-bold text-slate-900">${data.amount}€</p><p class="text-slate-500 mt-2">pour <b>${data.sender}</b></p></div>
+                        <div class="flex gap-3 mb-6"><label class="flex-1 border-2 border-slate-100 p-4 rounded-2xl text-center text-xs font-bold cursor-pointer has-[:checked]:bg-blue-50 has-[:checked]:border-brand"><input type="radio" name="pm" value="courant" checked class="hidden"> Carte</label><label class="flex-1 border-2 border-slate-100 p-4 rounded-2xl text-center text-xs font-bold cursor-pointer has-[:checked]:bg-blue-50 has-[:checked]:border-brand"><input type="radio" name="pm" value="cash" class="hidden"> Cash</label></div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Date du paiement</label>
+                        <input name="d" type="date" value="${new Date().toISOString().slice(0,10)}" class="w-full border-2 border-slate-100 p-4 rounded-2xl mb-8 text-sm font-bold outline-none focus:border-brand">
+                        <button class="w-full bg-green-500 text-white font-bold py-5 rounded-[1.5rem] shadow-lg">Confirmer le paiement</button>
+                    </form>`;
+                }
+                else if (type === 'category') {
+                    title = "Catégories";
+                    content = `<div class="space-y-6">${Object.keys(state.categories).map(k => `<div><h4 class="font-bold text-[10px] uppercase text-slate-400 mb-2">${k}</h4><div class="flex flex-wrap gap-2">${state.categories[k].map(c => `<span class="bg-slate-50 border border-slate-100 px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1">${c} <button onclick="window.App.actions.manageCat('del', '${k}', '${c}')" class="text-danger ml-1">×</button></span>`).join('')}</div><form class="mt-3 flex gap-2" onsubmit="event.preventDefault(); window.App.actions.manageCat('add', '${k}', this.val.value); this.reset()"><input name="val" placeholder="Ajouter..." class="border-2 border-slate-100 p-2 text-xs rounded-xl flex-1 outline-none focus:border-brand"><button class="text-brand font-bold text-xl px-2">+</button></form></div>`).join('')}</div>`;
+                }
+                else if (type === 'beneficiaries') {
+                    title = "Bénéficiaires";
+                    content = `<div class="space-y-3 mb-6 max-h-48 overflow-y-auto">${(state.plan.beneficiaries||[]).map(b => `<div class="flex justify-between p-3 bg-slate-50 rounded-xl text-sm font-medium"><span>${b}</span><button onclick="window.App.actions.toggleFav('${b}')" class="text-red-400">×</button></div>`).join('')}</div><form class="flex gap-3" onsubmit="event.preventDefault(); window.App.actions.toggleFav(this.val.value); this.reset()"><input name="val" placeholder="Nom..." class="border-2 border-slate-100 p-3 rounded-xl w-full outline-none focus:border-brand"><button class="bg-brand text-white px-4 rounded-xl font-bold">Ajouter</button></form>`;
+                }
+                else if (type === 'plan-item') {
+                    const sec = data; title = `Ajouter : ${sec}`;
+                    content = `<form onsubmit="event.preventDefault(); window.App.actions.addPlanItem('${sec}', {name:this.n.value, amount:this.a.value, category:this.c.value})">
+                        <input name="n" placeholder="Nom (ex: Loyer)" class="w-full border-2 border-slate-100 p-4 rounded-2xl mb-4 font-semibold outline-none focus:border-brand" required>
+                        <input name="a" type="number" step="0.01" placeholder="Montant €" class="w-full border-2 border-slate-100 p-4 rounded-2xl mb-4 font-bold text-lg outline-none focus:border-brand" required>
+                        <select name="c" class="w-full border-2 border-slate-100 p-4 rounded-2xl mb-8 text-sm font-semibold bg-white outline-none focus:border-brand">${state.categories[sec==='revenus'?'revenu':sec==='fixes'?'fixe':'epargne'].map(c=>`<option>${c}</option>`).join('')}</select>
+                        <button class="w-full bg-brand text-white font-bold py-5 rounded-[1.5rem] shadow-lg">Ajouter</button>
+                    </form>`;
+                }
+                else if (type === 'budget-cat') {
+                    title = "Budget Cible";
+                    content = `<form onsubmit="event.preventDefault(); window.App.actions.addCategoryBudget(this.c.value, this.a.value)">
+                        <select name="c" class="w-full border-2 border-slate-100 p-4 rounded-2xl mb-4 text-sm font-semibold bg-white outline-none focus:border-brand">${state.categories.variable.map(c=>`<option>${c}</option>`).join('')}</select>
+                        <input name="a" type="number" step="1" placeholder="Cible €" class="w-full border-2 border-slate-100 p-4 rounded-2xl mb-8 font-bold text-lg outline-none focus:border-brand" required>
+                        <button class="w-full bg-brand text-white font-bold py-5 rounded-[1.5rem] shadow-lg">Définir</button>
+                    </form>`;
+                }
+                else if (type === 'feedback') {
+                    title = "Avis";
+                    content = `<form onsubmit="event.preventDefault(); window.App.actions.sendFeedback({type:this.t.value, message:this.m.value})"><select name="t" class="w-full border-2 border-slate-100 p-4 mb-4 rounded-2xl outline-none"><option>Amélioration</option><option>Bug</option></select><textarea name="m" class="w-full border-2 border-slate-100 p-4 rounded-2xl h-32 mb-8 outline-none" placeholder="Message..." required></textarea><button class="w-full bg-brand text-white py-5 rounded-[1.5rem] font-bold shadow-lg">Envoyer</button></form>`;
                 }
 
                 modal.innerHTML = `
-                    <div class="fixed inset-0 bg-slate-900/60 z-[60] flex items-center justify-center p-4 backdrop-blur-sm animate-[fadeIn_0.2s]">
-                        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl p-6 relative">
-                            <button onclick="document.getElementById('modals').innerHTML=''" class="absolute top-4 right-4 text-slate-400 text-xl font-bold">×</button>
-                            ${inner}
+                    <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-md z-50 flex items-end sm:items-center justify-center sm:p-6 animate-fade">
+                        <div class="bg-white w-full sm:max-w-md rounded-t-[2.5rem] sm:rounded-[2rem] shadow-2xl flex flex-col max-h-[85vh] animate-fade">
+                            <div class="p-6 border-b border-slate-50 flex justify-between items-center shrink-0">
+                                <h3 class="font-bold text-xl text-slate-800">${title}</h3>
+                                <button onclick="window.App.closeModal()" class="p-2 bg-slate-50 rounded-full text-slate-400 hover:bg-slate-100 transition-colors">${Icon('close', 20)}</button>
+                            </div>
+                            <div class="p-8 overflow-y-auto pb-safe">${content}</div>
                         </div>
                     </div>
                 `;
             },
-
-            updateCatSelect: (type) => {
-                document.getElementById('cat-select').innerHTML = State.categories[type].map(c=>`<option>${c}</option>`).join('');
-            },
-
-            saveTx: async (data, id) => {
-                document.getElementById('modals').innerHTML = '';
-                const col = collection(db, 'artifacts', APP_ID, 'users', State.user.uid, 'transactions');
-                if(id) await updateDoc(doc(db, 'artifacts', APP_ID, 'users', State.user.uid, 'transactions', id), data);
-                else await addDoc(col, { ...data, createdAt: new Date().toISOString() });
-            },
-
-            delTx: async (id) => { 
-                if(confirm('Supprimer ?')) await deleteDoc(doc(db, 'artifacts', APP_ID, 'users', State.user.uid, 'transactions', id)); 
-            },
-
-            addInitial: async (c, e, ca) => {
-                document.getElementById('modals').innerHTML = '';
-                const batch = writeBatch(db);
-                const col = collection(db, 'artifacts', APP_ID, 'users', State.user.uid, 'transactions');
-                const d = new Date().toISOString().slice(0,10);
-                if(c) batch.set(doc(col), { type: 'initial', amount: parseFloat(c), category: 'Compte Courant', date: d, createdAt: new Date().toISOString() });
-                if(e) batch.set(doc(col), { type: 'initial', amount: parseFloat(e), category: 'Compte Épargne', date: d, createdAt: new Date().toISOString() });
-                if(ca) batch.set(doc(col), { type: 'initial', amount: parseFloat(ca), category: 'Espèces', date: d, createdAt: new Date().toISOString() });
-                await batch.commit();
-            },
             
-            genMonthly: async () => {
-                if(!confirm("Générer les frais fixes ?")) return;
-                const batch = writeBatch(db);
-                const col = collection(db, 'artifacts', APP_ID, 'users', State.user.uid, 'transactions');
-                (State.plan.fixes||[]).forEach(item => {
-                     batch.set(doc(col), {
-                        type: 'fixe', category: item.category, name: item.name, amount: parseFloat(item.amount),
-                        date: `${State.month}-${String(item.day || 1).padStart(2,'0')}`, createdAt: new Date().toISOString(), paymentMethod: 'courant'
-                     });
-                });
-                await batch.commit();
-            },
-
-            addPlanItem: async (sec, data) => {
-                 document.getElementById('modals').innerHTML = '';
-                 const newS = [...(State.plan[sec]||[]), data];
-                 await setDoc(doc(db, 'artifacts', APP_ID, 'users', State.user.uid, 'settings', 'budget_plan'), {...State.plan, [sec]:newS});
-            },
-            
-            delPlanItem: async (sec, idx) => {
-                 const newS = [...State.plan[sec]]; newS.splice(idx,1);
-                 await setDoc(doc(db, 'artifacts', APP_ID, 'users', State.user.uid, 'settings', 'budget_plan'), {...State.plan, [sec]:newS});
+            closeModal: () => document.getElementById('modals').innerHTML = '',
+            switchTab: (id, btn) => {
+                document.querySelectorAll('#modals [id^="tab-"]').forEach(e => e.classList.add('hidden'));
+                document.getElementById('tab-'+id).classList.remove('hidden');
+                document.querySelectorAll('#modals .tab-btn').forEach(b => b.className = 'tab-btn flex-1 py-3 text-xs font-bold rounded-xl transition-all text-slate-400');
+                btn.className = 'tab-btn flex-1 py-3 text-xs font-bold rounded-xl transition-all bg-white shadow-sm text-slate-800 active';
             }
         };
 
-        // Bind global functions for HTML access
         window.App = App;
-        window.formatMoney = formatMoney;
-
-        // Init
         App.init();
 
     </script>
